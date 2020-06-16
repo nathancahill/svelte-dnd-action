@@ -1,4 +1,4 @@
-import { isCenterOfAInsideB, calcDistanceBetweenCenters } from './intersection';
+import { isPointInsideElement, calcDistanceFromPointToCenters } from './intersection';
 
 /**
  * @typedef {Object} Index
@@ -7,12 +7,12 @@ import { isCenterOfAInsideB, calcDistanceBetweenCenters } from './intersection';
  */
 /**
  * Find the index for the dragged element in the list it is dragged over
- * @param {HTMLElement} floatingAboveEl 
+ * @param {Point} point
  * @param {HTMLElement} collectionBelowEl 
  * @returns {Index|null} -  if the element is over the container the Index object otherwise null
  */
-export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
-    if (!isCenterOfAInsideB(floatingAboveEl, collectionBelowEl)) {
+export function findWouldBeIndex(point, collectionBelowEl) {
+    if (!isPointInsideElement(point, collectionBelowEl)) {
         return null;
     }
     const children = collectionBelowEl.children;
@@ -23,7 +23,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     // the search could be more efficient but keeping it simple for now
     // a possible improvement: pass in the lastIndex it was found in and check there first, then expand from there
     for (let i=0; i< children.length; i++) {
-        if (isCenterOfAInsideB(floatingAboveEl, children[i])) {
+        if (isPointInsideElement(point, children[i])) {
             return {index: i, isProximityBased: false};
         }
     }
@@ -33,7 +33,7 @@ export function findWouldBeIndex(floatingAboveEl, collectionBelowEl) {
     let indexOfMin = undefined;
     // we are checking all of them because we don't know whether we are dealing with a horizontal or vertical container and where the floating element entered from
     for (let i=0; i< children.length; i++) {
-        const distance = calcDistanceBetweenCenters(floatingAboveEl, children[i]);
+        const distance = calcDistanceFromPointToCenters(point, children[i]);
         if (distance < minDistanceSoFar) {
             minDistanceSoFar = distance;
             indexOfMin = i;

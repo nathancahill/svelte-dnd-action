@@ -56,6 +56,26 @@ function isPointInsideRect(point, rect) {
 }
 
 /**
+ * @param {Point} point
+ * @param {HTMLElement} el
+ * @return {boolean|boolean}
+ */
+export function isPointInsideElement(point, el) {
+    const rectOfEl = getAbsoluteRect(el);
+    return isPointInsideRect(point, rectOfEl);
+}
+
+/**
+ * @param {HTMLElement|ChildNode} elA
+ * @param {HTMLElement|ChildNode} elB
+ * @return {number}
+ */
+export function calcDistanceFromPointToCenters(point, el) {
+    const centerOfEl = findCenterOfElement(el);
+    return calcDistance(point, centerOfEl);
+}
+
+/**
  * find the absolute coordinates of the center of a dom element
  * @param el {HTMLElement}
  * @returns {{x: number, y: number}}
