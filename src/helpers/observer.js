@@ -17,7 +17,8 @@ let mouseX;
 let mouseY;
 
 function track(e) {
-    console.log(e)
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 }
 
 /**
@@ -41,7 +42,7 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, intersec
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
-        const currentCenterOfDragged = intersectionMode === 'center' ? findCenterOfElement(draggedEl) : findCursor();
+        const currentCenterOfDragged = intersectionMode === 'center' ? findCenterOfElement(draggedEl) : ({ x: mouseX, y: mouseY });
         const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (!scrolled && lastCentrePositionOfDragged &&
