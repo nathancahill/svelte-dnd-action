@@ -13,24 +13,35 @@ const {scrollIfNeeded, resetScrolling} = makeScroller();
 let next;
 
 
+let mouseX;
+let mouseY;
+
+function track(e) {
+    console.log(e)
+}
+
 /**
  * Tracks the dragged elements and performs the side effects when it is dragged over a drop zone (basically dispatching custom-events scrolling)
  * @param {Set<HTMLElement>} dropZones 
  * @param {HTMLElement} draggedEl 
  * @param {number} [intervalMs = INTERVAL_MS]
  */
-export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
+export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS, intersectionMode = 'center') {
     // initialization
     let lastDropZoneFound;
     let lastIndexFound;
     let lastIsDraggedInADropZone = false;
     let lastCentrePositionOfDragged;
 
+    if (intersectionMode === 'cursor') {
+        window.addEventListener('mousemove', track)
+    }
+
     /**
      * The main function in this module. Tracks where everything is/ should be a take the actions
      */
     function andNow() {
-        const currentCenterOfDragged = findCenterOfElement(draggedEl);
+        const currentCenterOfDragged = intersectionMode === 'center' ? findCenterOfElement(draggedEl) : findCursor();
         const scrolled = scrollIfNeeded(currentCenterOfDragged, lastDropZoneFound);
         // we only want to make a new decision after the element was moved a bit to prevent flickering
         if (!scrolled && lastCentrePositionOfDragged &&
@@ -85,8 +96,13 @@ export function observe(draggedEl, dropZones, intervalMs = INTERVAL_MS) {
 }
 
 // assumption - we can only observe one dragged element at a time, this could be changed in the future
-export function unobserve() {
+export function unobserve(draggedEl, dropZones, intersectionMode = 'center') {
     console.debug("unobserving");
+
+    if (intersectionMode === 'cursor') {
+        window.removeEventListener('mousemove', track)
+    }
+
     clearTimeout(next);
     resetScrolling();
 }

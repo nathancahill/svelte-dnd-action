@@ -22,6 +22,7 @@ let originalDragTarget;
 let draggedEl;
 let draggedElData;
 let draggedElType;
+let draggedIntersectionMode;
 let originDropZone;
 let originIndex;
 let shadowElIdx;
@@ -66,7 +67,7 @@ function watchDraggedElement() {
     window.addEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
     // it is important that we don't have an interval that is faster than the flip duration because it can cause elements to jump bach and forth
     const observationIntervalMs = Math.max(MIN_OBSERVATION_INTERVAL_MS, ...Array.from(dropZones.keys()).map(dz => dzToConfig.get(dz).dropAnimationDurationMs));
-    observe(draggedEl, dropZones, observationIntervalMs);
+    observe(draggedEl, dropZones, observationIntervalMs, draggedIntersectionMode);
 }
 function unWatchDraggedElement() {
     console.debug('unwatching dragged element');
@@ -78,7 +79,7 @@ function unWatchDraggedElement() {
         dz.removeEventListener(DRAGGED_OVER_INDEX_EVENT_NAME, handleDraggedIsOverIndex);
     }
     window.removeEventListener(DRAGGED_LEFT_DOCUMENT_EVENT_NAME, handleDrop);
-    unobserve(draggedEl, dropZones);
+    unobserve(draggedEl, dropZones, draggedIntersectionMode);
 }
 
 /* custom drag-events handlers */
@@ -197,6 +198,7 @@ function cleanupPostDrop() {
     originalDragTarget = undefined;
     draggedElData = undefined;
     draggedElType = undefined;
+    draggedIntersectionMode = undefined;
     originDropZone = undefined;
     originIndex = undefined;
     shadowElData = undefined;
@@ -281,9 +283,10 @@ export function dndzone(node, options) {
         const currentIdx = elToIdx.get(originalDragTarget);
         originIndex = currentIdx;
         originDropZone = originalDragTarget.parentElement;
-        const {items, type} = config;
+        const {items, type, intersectionMode} = config;
         draggedElData = {...items[currentIdx]};
         draggedElType = type;
+        draggedIntersectionMode = intersectionMode;
         shadowElData = {...draggedElData, isDndShadowItem: true};
 
         // creating the draggable element
@@ -320,6 +323,7 @@ export function dndzone(node, options) {
         dragDisabled = false,
         dropFromOthersDisabled = false,
         dropTargetStyle = DEFAULT_DROP_TARGET_STYLE,
+        intersectionMode = 'center',
          ...rest
      }) {
         if (Object.keys(rest).length > 0) {
@@ -335,8 +339,8 @@ export function dndzone(node, options) {
         config.items = items;
 
         config.dragDisabled = dragDisabled;
-
         config.dropTargetStyle = dropTargetStyle;
+        config.intersectionMode = intersectionMode;
 
         if (isWorkingOnPreviousDrag && config.dropFromOthersDisabled !== dropFromOthersDisabled) {
             if (dropFromOthersDisabled) {
